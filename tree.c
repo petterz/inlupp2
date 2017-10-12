@@ -101,29 +101,37 @@ node_t *node_new(tree_key_t key, elem_t elem){
 }
 
 
-void tree_delete_aux(node_t *node, bool delete_keys, bool delete_elements){
+void tree_delete_aux(node_t *node, element_free_fun elem, element_free_fun key){
   if(node->left == NULL && node->right == NULL){
-    if(delete_keys){
-      key_free(node->key);
+    if(key){
+      key(node->key);
     }
-    if(delete_elements){
-      elements_free(node->elem);
+    if(elem){
+      elem(node->elem);
     }
     free(node); 
   }
   if(node->left != NULL){
-    tree_delete_aux(node->left, delete_keys, delete_elements);
+    tree_delete_aux(node->left, elem, key);
   }
   else if(node->right != NULL){
-    tree_delete_aux(node->right, delete_keys, delete_elements);
+    tree_delete_aux(node->right, elem,key);
   }
  
 }
 
 
 void tree_delete(tree_t *tree, bool delete_keys, bool delete_elements){
-  while(tree_size(tree) > 0){
-    tree_delete_aux(tree->node, delete_keys, delete_elements);
+  element_free_fun elem=NULL;
+  element_free_fun key=NULL;
+  if (delete_elements==true){
+   elem=tree->element_free;
+  }
+ if (delete_keys==true){
+   key=tree->element_free;
+  }
+  if(tree_size(tree) > 0){
+      tree_delete_aux(tree->node, elem, key);
   }
   if (tree_size(tree) == 0){
     free(tree);
@@ -131,19 +139,19 @@ void tree_delete(tree_t *tree, bool delete_keys, bool delete_elements){
    
 }
 
-bool tree_insert_aux(node_t *node, tree_key_t key, elem_t elem){
+bool tree_insert_aux(node_t *node, tree_key_t key, elem_t elem, element_comp_fun compare){
 
   if (node == NULL){
     node=node_new(key, elem);
     return true;
   }
   
-  if (0>compare_fun(key,node->key)){
-    tree_insert_aux(node->left, key, elem);
+  if (0>compare(key,node->key)){
+    tree_insert_aux(node->left, key, elem, compare);
   }
   
-  else if (0<compare_fun(key,node->key)){
-    tree_insert_aux(node->right, key, elem);
+  else if (0<compare(key,node->key)){
+    tree_insert_aux(node->right, key, elem, compare);
   }
   else {
     return false;
@@ -155,22 +163,22 @@ bool tree_insert_aux(node_t *node, tree_key_t key, elem_t elem){
   // there are 4 cases
  
   // Left Left Case
-  if (balance > 1 && (0>compare_fun(key,node->left->key)))
+  if (balance > 1 && (0>compare(key,node->left->key)))
     rightRotate(node);
  
   // Right Right Case
-  if (balance < -1 && (0<compare_fun(key,node->right->key)))
+  if (balance < -1 && (0<compare(key,node->right->key)))
     leftRotate(node);
  
   // Left Right Case
-  if (balance > 1 &&  (0<compare_fun(key,node->left->key)))
+  if (balance > 1 &&  (0<compare(key,node->left->key)))
     {
       node->left =  leftRotate(node->left);
       rightRotate(node);
     }
  
   // Right Left Case
-  if (balance < -1 &&  (0>compare_fun(key,node->right->key)))
+  if (balance < -1 &&  (0>compare(key,node->right->key)))
     {
       node->right = rightRotate(node->right);
       leftRotate(node);
@@ -182,7 +190,7 @@ bool tree_insert(tree_t *tree, tree_key_t key, elem_t elem){
 if(tree_has_key(tree, key)){ //retunerar false om nyckeln redan finns
       return false;
   }else{
-    return tree_insert_aux(tree->node, key, elem);
+  return tree_insert_aux(tree->node, key, elem, tree->element_comp);
   }
 }
 
@@ -226,13 +234,13 @@ int tree_depth(tree_t *tree){
 
 //Använder rekursion för att traversera trädet och retunera jämförelsen av instoppade nyckeln och alla nycklar i trädet, för att se om nyckeln redan finns i trädet.
 
-bool tree_has_key_aux(node_t *node, tree_key_t key){
-  if(0==compare_fun(node->key, key)){
+bool tree_has_key_aux(node_t *node, tree_key_t key, element_comp_fun compare){
+  if(0==compare(node->key, key)){
     return true;
   }else if(node->left == NULL && node->right == NULL){
     return false;
   }else{
-    return(tree_has_key_aux(node->left, key) || tree_has_key_aux(node->right, key));
+    return(tree_has_key_aux(node->left, key, compare) || tree_has_key_aux(node->right, key, compare));
   }
 }
 
@@ -240,7 +248,7 @@ bool tree_has_key(tree_t *tree, tree_key_t key){
   if(tree->node == NULL){
     return false;
   }else{
-    return tree_has_key_aux(tree->node, key);           
+    return tree_has_key_aux(tree->node, key, tree->element_comp);           
   }
 }
 
@@ -253,15 +261,15 @@ bool tree_has_key(tree_t *tree, tree_key_t key){
 //Utifrån antagandet att den inmatade nyckeln existerar i det givna trädet så kommer funktionen att retunera elementet kopplat till nyckeln
 
 
-bool tree_get_aux(node_t *node, tree_key_t key, elem_t *result){
-  if(0==compare_fun(node->key, key)){
+bool tree_get_aux(node_t *node, tree_key_t key, elem_t *result, element_comp_fun compare){
+  if(0==compare(node->key, key)){
     return true;
   }
    else if(node->left != NULL){
-    return tree_get_aux(node->left, key, result);
+     return tree_get_aux(node->left, key, result, compare);
   }
   else if(node->right != NULL){
-    return tree_get_aux(node->right, key, result);
+    return tree_get_aux(node->right, key, result, compare);
   }
 else
     return false; 
@@ -269,7 +277,7 @@ else
 
 bool tree_get(tree_t *tree, tree_key_t key, elem_t *result){
   if(tree->node != NULL){
-    return tree_get_aux(tree->node, key, result);
+    return tree_get_aux(tree->node, key, result, tree->element_comp);
   }
   else{
     return NULL;
@@ -287,7 +295,7 @@ node_t *min_value_node(node_t *node)
     return current;
 }
 
- bool node_remove(node_t *node, tree_key_t key, elem_t *result){
+bool node_remove(node_t *node, tree_key_t key, elem_t *result, element_comp_fun compare){
    
     // STEP 1: PERFORM STANDARD BST DELETE
  
@@ -296,13 +304,13 @@ node_t *min_value_node(node_t *node)
  
     // If the key to be deleted is smaller than the
     // root's key, then it lies in left subtree
-    if (0>compare_fun(key,node->key))
-     node_remove(node->left, key, result);
+    if (0>compare(key,node->key))
+      node_remove(node->left, key, result, compare);
  
     // If the key to be deleted is greater than the
     // root's key, then it lies in right subtree
-    else if(0<compare_fun(key,node->key))
-      node_remove(node->right, key, result);
+    else if(0<compare(key,node->key))
+      node_remove(node->right, key, result, compare);
     // if key is same as root's key, then This is
     // the node to be deleted
     else
@@ -333,7 +341,7 @@ node_t *min_value_node(node_t *node)
             node->key = temp->key;
  
             // Delete the inorder successor
-            node_remove(node->right, temp->key, result);
+            node_remove(node->right, temp->key, result, compare);
         }
     }
  
@@ -375,7 +383,7 @@ node_t *min_value_node(node_t *node)
 bool tree_remove(tree_t *tree, tree_key_t key, elem_t *result){
 {
   if (tree_has_key(tree, key)){
-    return node_remove(tree->node, key, result);
+    return node_remove(tree->node, key, result, tree->element_comp);
   }
   else
     return false;
