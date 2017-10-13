@@ -1,108 +1,75 @@
-/// !! OBS -- du skall inte ändra i denna fil, med ETT undantag:
-/// !! du skall ändra i typedef av L så att det passar ditt program.
-
-
 #ifndef __list_h__
 #define __list_h__
 
 #include <stdbool.h>
+#include "common.h"
 
-/// Change this definition and replace int with the appropriate type
-/// in your program. 
-typedef void *L;
-
-/// Define struct list in your .c file not here! (why?)
 typedef struct list list_t;
-
-/// This function is used in list_delete() to allow the lists which are
-/// the sole owners of their data to free the data on delete.
-typedef void(*list_action)(L elem);
-
-
-
-/// \file list.h
+typedef void(iter_fun_t)(elem_t elem);
+/// Creates a new list 
 ///
-/// \author Tobias Wrigstad
-/// \version 1.2
-/// \date 2017-09-13
-/// \bug None known. 
-///
-/// Changelog 2017-09-18
-/// Review changes (docs only)
-/// Added new helper functions
-
-
-/// Creates a new list
-///
+/// \param copy (may be NULL) a function applied to all elements when stored in the list
+/// \param free (may be NULL) used to free elements in list_delete
+/// \param compare (may be NULL) used to compare elements in list_contains
 /// \returns: empty list
-list_t *list_new();
+list_t *list_new(element_copy_fun copy, element_free_fun free, element_comp_fun compare);
 
-/// Inserts a new element at the end of the list
-///
-/// \param list pointer to the list
-/// \param elem the element to be appended
-void list_append(list_t *list, L elem);
-
-/// Inserts a new element at the beginning of the list
-///
-/// \param list pointer to the list
-/// \param elem the element to be prepended
-void list_prepend(list_t *list, L elem);
 
 /// Inserts a new element at a given index. 
 ///
-/// Example:
+/// If list's copy function is non-NULL, it will be applied to elem and its result
+/// stored in the list. Otherwise, elem will be stored in the list. 
 ///
-/// list_t *l = list_new(); // l == []
-/// list_insert(l, 0, e1);  // l == [e1]
-/// list_insert(l, 0, e2);  // l == [e2, e1]
-/// list_insert(l, 1, e3);  // l == [e2, e3, e1]
-/// list_insert(l, 5, e4);  // l == [e2, e3, e1]
-///
-/// The last case fails (and returns false) because
-/// size is 3, meaning 5 is not a valid index. 
-///
-/// Note that insert at index 0 is the same as prepend 
-/// and insert index size is the same as append. 
-///
-/// Negative indexes should be supported:
-///
-/// list_insert(l, -1, e4);       // l == [e2, e3, e1, e4]
-///
-/// A positive index can be calculated from a 
-/// negative like this: pos_i = size + 1 + neg_i.
+/// All indexes are valid. 0 means first element. Negative indexes
+/// count backward and too large negative indexes equal 0. Too
+/// large positive indexes are same as -1.
 /// 
 /// \param list  pointer to the list
 /// \param index the index for elem to be inserted at
 /// \param elem  the element to be inserted
-/// \returns true if succeeded, else false
-bool list_insert(list_t *list, int index, L elem);
+void list_insert(list_t *list, int index, elem_t elem);
+
+/// Inserts a new element at the end of the list.
+///
+/// If list's copy function is non-NULL, it will be applied to elem and its result
+/// stored in the list. Otherwise, elem will be stored in the list. 
+///
+/// \param list pointer to the list
+/// \param elem the element to be appended
+void list_append(list_t *list, elem_t elem);
+
+/// Inserts a new element at the beginning of the list
+///
+/// If list's copy function is non-NULL, it will be applied to elem and its result
+/// stored in the list. Otherwise, elem will be stored in the list. 
+///
+/// \param list pointer to the list
+/// \param elem the element to be prepended
+void list_prepend(list_t *list, elem_t elem);
 
 /// Removes an element from a list.
 ///
-/// Example: (assume l == [e2, e3, e1, e4])
-///
-/// L elem;
-/// list_remove(l, 1, &elem);  // l = [e2, e1, e4], elem == e3
-/// list_remove(l, -1, &elem); // l = [e2, e1], elem == e4
-///
+/// All indexes are valid. 0 means first element. Negative indexes
+/// count backward and too large negative indexes equal 0. Too
+/// large positive indexes are same as -1.
+/// 
 /// \param list  pointer to the list
 /// \param index the index to be removed
-/// \param elem a pointer to where the element can be stored
-/// \returns true if succeeded, else false
-bool list_remove(list_t *list, int index, L *elem);
+/// \param delete if true, run list's free function on the removed element
+void list_remove(list_t *list, int index, bool delete);
 
 /// Returns the element at a given index
 /// \param list  pointer to the list
 /// \param index the index to be returned
-/// \returns a pointer to the element at index index
-L *list_get(list_t *list, int index);
+/// \param result pointer to where the element at index index will be stored if true is returned
+/// \returns true if index was a valid index
+bool list_get(list_t *list, int index, elem_t *result);
 
-/// A convenience for list_get(list, 0)
-L *list_first(list_t *list);
+/// A convenience for list_get(list, 0, result)
+bool list_first(list_t *list, elem_t *result);
 
-/// A convenience for list_get(list, -1)
-L *list_last(list_t *list);
+/// A convenience for list_get(list, -1, result)
+bool list_last(list_t *list, elem_t *result);
 
 /// Returns the length of the list. It is undefined
 /// whether the length is calculated in O(n) time or
@@ -112,29 +79,30 @@ L *list_last(list_t *list);
 /// \returns the length of list
 int list_length(list_t *list);
 
-//////////// ================= Added in version 1.2 
-///
-/// NOTE: Implementing these functions is NOT mandatory
-///
-
 /// Deletes a list. 
 ///
 /// \param list pointer to the list
-/// \param cleanup a function that takes an element as
-///        argument, to be used to free memory. If this param is 
-///        NULL, no cleanup of keys or elements will happen.
-void list_delete(list_t *list, list_action cleanup);
-
-/// This function is used in list_apply() to allow applying a function
-/// to all elements in a list
-typedef void(*list_action2)(L elem, void *data);
+/// \param delete if true, use list's free function to free elements
+void list_delete(list_t *list, bool delete);
 
 /// Applies a function to all elements in a list in list order
 ///
 /// \param list the list
 /// \param fun the function to apply to all elements
 /// \param data an extra argument passed to each call to fun (may be NULL)
-void list_apply(list_t *list, list_action2 fun, void *data);
+/// \returns the result of all fun calls, combined with OR (||)
+bool list_apply(list_t *list, elem_apply_fun fun, void *data);
+
+/// Searches for an element in a list
+///
+/// Uses list's compare if non-NULL, otherwise uses == for comparison. 
+///
+/// \param list the list
+/// \param elem the element to search for
+/// \returns the index of elem in list, or -1 if not found
+int list_contains(list_t *list, elem_t elem);
+
+void list_iterate(list_t *l, iter_fun_t *f);
 
 
 #endif
