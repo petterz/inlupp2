@@ -13,6 +13,7 @@ struct node {
   node_t *right;
 };
 
+
 struct tree {
   node_t *node;
   element_copy_fun element_copy;
@@ -381,7 +382,6 @@ bool node_remove(node_t *node, tree_key_t key, elem_t *result, element_comp_fun 
 }
 
 bool tree_remove(tree_t *tree, tree_key_t key, elem_t *result){
-{
   if (tree_has_key(tree, key)){
     return node_remove(tree->node, key, result, tree->element_comp);
   }
@@ -444,7 +444,7 @@ elem_t *tree_elements(tree_t *tree){
 }
 
  
-void tree_apply_aux(node_t *node, enum tree_order order, key_elem_apply_fun function, void *data){
+bool tree_apply_aux(node_t *node, enum tree_order order, key_elem_apply_fun function, void *data){
   if(order){ // postorder
     if(node->left == NULL && node->right == NULL){
       function(node->key, node->elem, data);
@@ -496,16 +496,18 @@ void tree_apply_aux(node_t *node, enum tree_order order, key_elem_apply_fun func
       }
     }
   }
+      return true;
 }
 
 
-void tree_apply(tree_t *tree, enum tree_order order, key_elem_apply_fun fun, void *data){
+bool tree_apply(tree_t *tree, enum tree_order order, key_elem_apply_fun fun, void *data){
   if(tree->node == NULL){
     puts("Please input a non-empty tree");
-  }else{
-    tree_apply_aux(tree->node, order, fun, data);
+    return false;
   }
-}
+  else{
+    return tree_apply_aux(tree->node, order, fun, data);
+  }
 }
 
 

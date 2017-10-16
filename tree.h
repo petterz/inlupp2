@@ -4,11 +4,13 @@
 #include <stdbool.h>
 #include "common.h"
 
+
 typedef elem_t tree_key_t;
 typedef element_free_fun key_free_fun;
 
 /// Define struct tree in your .c file not here! (why?)
 typedef struct tree tree_t;
+typedef struct item item_t;
 
 /// Creates a new tree
 ///

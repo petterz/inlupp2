@@ -1,7 +1,9 @@
 #include "list.h"
+#include "common.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 
 typedef struct link link_t;
 
@@ -212,4 +214,16 @@ void list_iterate(list_t *l, iter_fun_t *f)
     {
         f(c->elem);
     }
+}
+
+
+int main(){
+  list_t *list=list_new(NULL, NULL ,NULL);
+  elem_t elem = {.p = NULL};
+  list_append(list, elem);
+  list_length(list);
+  elem_t result;
+  bool x=(list_get(list, 0, &result));
+  printf("%d",x);
+  return 0;
 }
