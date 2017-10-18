@@ -1,19 +1,14 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<stdbool.h>
-#include<string.h>
-#include<time.h>
-#include<ctype.h>
-#include "tree.h"
-#include "list.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <time.h>
+#include <ctype.h>
 #include "utils.h"
-#include "common.h"
+#include "tree.h"
+#include "item.h"
+#include "shelfs.h"
+#include "list.h"
 
-
-typedef struct shelf {
-  elem_t *name;
-  int amount;
-}shelf_t;
 
 
 
@@ -22,7 +17,6 @@ typedef struct action
   int type; // NOTHING = 0, ADD = 1, REMOVE = 2, EDIT = 3, REMOVE 4
   item_t *merch; // pekar på tillagd vara och redigerade
   item_t *copy; // sparar item vid borttagning och redigering
-  list_t *shelves;
 }action_t;
 
 void print_menu_db(){
@@ -60,10 +54,11 @@ bool unique_shelf(tree_t *db, elem_t *newshelf)
 {
  int len = tree_size(db);
   elem_t *elems = tree_elements(db);
+  list_t **shelflist;
   for(int i = 0; i<len; ++i)
     {
       elem_t elem = elems[i];
-      list_t *shelflist = elem->shelfs;
+      shelflist[i] = elem->shelfs;
       for(int j = 0; j < list_length(shelflist); ++j)
         {
           
