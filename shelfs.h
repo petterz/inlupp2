@@ -1,6 +1,10 @@
 #ifndef __SHELFS_H__
-#include <stdbool.h>
 #define __SHELFS_H__
+
+#include <stdbool.h>
+#include "tree.h"
+#include "list.h"
+#include "common.h"
 
 /*!
  * \brief A shelf
@@ -9,6 +13,11 @@
  * The name represents the shelf, nad the value the number of articles on that shelf.
  */
 typedef struct shelf shelf_t;
+
+struct shelf {
+  char *shelfName; /*!<The name of the shelf, at initialization it is allocated 100*char */
+  int ammount; /*!<The ammount of 'Stuff' at a the shelf */
+};
 
 /*!
  * \brief Creates a new shelf.
