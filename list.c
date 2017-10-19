@@ -5,20 +5,6 @@
 #include <stdbool.h>
 #include <string.h>
 
-typedef struct link link_t;
-
-struct list{
-  link_t *first;
-  link_t *last;
-  element_comp_fun compare;
-  element_free_fun free;
-  element_copy_fun copy;
-};
-
-struct link{
-  elem_t elem;
-  link_t *next;
-};
 
 
 //Creates a new empty list and returns it
@@ -111,8 +97,16 @@ void list_insert(list_t *list, int index, elem_t elem){
     }
 }
 
-
-
+/*
+bool exist_list(list_t *list, elem_t elem){
+    for(link_t *current = list -> first; current; current = current -> next) {
+        if (list->compare(current -> elem, elem) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+*/
 void list_remove_aux(list_t *list, int index){
   if(list->first == list->last){
     free(list->first);

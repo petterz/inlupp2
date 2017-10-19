@@ -22,7 +22,7 @@ typedef struct item item_t;
  * \param shelf_list A list of shelf objects. Uses the list.c for the list and all the objects in it should be from shelf.c
  * \return A pointer to a Item, (struct item)
  */
-item_t *    new_item(tree_key_t *name, char *desc, int price, list_t *shelf_list);
+item_t *    new_item(char *name, char *desc, int price, list_t *shelf_list);
 
 /*!
  * \brief Creates a deep copy of a item
@@ -49,7 +49,7 @@ void        delete_item(item_t *item);
  * \param desc The new name of the item
  * \return void
  */
-void        set_name(item_t *item, elem_t* name);
+void        set_name(item_t *item, char* name);
 
 /*!\brief Changes the descriptiom for item
  * Frees the old descriptiom and points to a new on given as parameter
@@ -136,7 +136,7 @@ int         cmp_item(const void *w1, const void *w2);
  * \param name The char to compare the item with 
  * \return int Int displaying the relation between the items name and a string
  */
-int        cmp_item_name_int(item_t *w1, elem_t *name);
+int        cmp_item_name_int(item_t *w1, char *name);
 
 /*!
  * \brief compares a items name and a string
@@ -147,7 +147,7 @@ int        cmp_item_name_int(item_t *w1, elem_t *name);
  * \param name The char to compare the item with 
  * \return int Int displaying the relation between the items name and a string
  */
-bool        cmp_item_name(item_t *w1, elem_t *name);
+bool        cmp_item_name(item_t *w1, char *name);
 
 /*!
  * \brief Checks if shelf existin item
@@ -199,6 +199,6 @@ int         shelf_list_size(item_t *w1);
  * 2. OSV
  *
  */
-void        print_item(elem_t *item);
+void        print_item(item_t *item);
 
 #endif
