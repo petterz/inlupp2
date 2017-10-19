@@ -3,8 +3,20 @@
 
 #include <stdbool.h>
 #include "common.h"
+typedef struct link link_t;
+typedef struct list{
+  link_t *first;
+  link_t *last;
+  element_comp_fun compare;
+  element_free_fun free;
+  element_copy_fun copy;
+}list_t;
 
-typedef struct list list_t;
+struct link{
+  elem_t elem;
+  link_t *next;
+};
+
 typedef void(iter_fun_t)(elem_t elem);
 /// Creates a new list 
 ///

@@ -76,7 +76,7 @@ void        set_price(item_t *item, int price);
  * \param item The item
  * \return char *The name of the item
  */
-tree_key_t * get_name(item_t *item);
+char * get_name(item_t *item);
 
 /*!
  * \brief Returns item description 
