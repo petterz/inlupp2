@@ -2,9 +2,7 @@
 #define __SHELFS_H__
 
 #include <stdbool.h>
-#include "tree.h"
-#include "list.h"
-#include "common.h"
+
 
 /*!
  * \brief A shelf

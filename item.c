@@ -9,12 +9,7 @@
 
 #define BUFFERSIZE 100;
 
-typedef struct item {
-    char *name; /*!< Name of the ware*/
-    char *description; /*!< The description of the item*/
-    int price; /*< The price of the item*/
-    list_t *shelf_list;/* <A list of shelfs, using the list.c and shelf.c*/
-}item_t;
+
 
 /* Skapar en item med givna egenskaper
  * */
@@ -78,12 +73,34 @@ void set_description(item_t *item, char *desc) {
 void set_price(item_t *item, int price) {
     item -> price = price;
 }
+bool shelf_exist(item_t *item, char *name) {
+  elem_t shelf_name = {.p = name};
+ int retur = list_contains(item -> shelf_list, shelf_name);
+ if (retur==-1)
+   return false;
+ else
+   return true;
+}
+
+list_t *get_shelfs_item(item_t *item)
+{
+  int len = list_length(item->shelf_list);
+  list_t **shelf = calloc(len, sizeof(shelf_t));
+  for(int i = 0; i<len; ++i)
+    {
+      elem_t *temp=NULL;
+      list_get(item->shelf_list, i, temp);
+     shelf[i]=(list_t*)temp->p;
+    }
+  return *shelf;
+}
 
 
 /* Adds shelf to list
  * */
 void add_shelf_item(item_t *item, shelf_t *shelf) {
-  list_append(item -> shelf_list, (void*) shelf);
+  elem_t newshelf= {.p =shelf};
+  list_append(item -> shelf_list, newshelf);
 }
 /* Deletes item at index
  * */
@@ -99,7 +116,7 @@ void print_item(item_t *item) {
   printf("\nNamn: %s\nDesc: %s\nPris: %i\n", (char*)get_name(item),get_description(item), get_price(item));
   printf("Hyllor:\n");
   for (int i=0; i<list_length(item->shelf_list); i++) {
-     elem_t *result;
+     elem_t *result=NULL;
     list_get(item->shelf_list, i ,result);
     puts(result->p);
       }

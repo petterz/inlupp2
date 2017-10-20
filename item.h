@@ -1,16 +1,23 @@
-#ifndef __ITEM_H__
-#define __ITEM_H__
+#ifndef __item_h__
+#define __item_h__
 
-#include "common.h"
+#include <stdbool.h>
 #include "list.h"
 #include "shelfs.h"
-#include "tree.h"
+
 
 
 /*!
  * \brief A struct representing the Item
  * */
 typedef struct item item_t;
+
+typedef struct item {
+    char *name; /*!< Name of the ware*/
+    char *description; /*!< The description of the item*/
+    int price; /*< The price of the item*/
+    list_t *shelf_list;/* <A list of shelfs, using the list.c and shelf.c*/
+}item_t;
 
 /*!
  * \brief Creates a new item
@@ -96,6 +103,9 @@ char *      get_description(item_t *item);
  */
 int         get_price(item_t *item);
 
+
+list_t *get_shelfs_item(item_t *item);
+
 /*!
  * \brief Adds a shelf to the item list
  * Adds a shelf struct to the list for the item. Appends the shelf to the list
@@ -157,7 +167,7 @@ bool        cmp_item_name(item_t *w1, char *name);
  * \param s1 the Name of the shelf that is checked for
  * \return bool True if shelf exist
  */
-bool        shelf_exist(item_t *w1, char *s1);
+bool        shelf_exist(item_t *item, char *s1);
 
 /*!
  * \brief Returns a pointer to a shelf at a certain index
